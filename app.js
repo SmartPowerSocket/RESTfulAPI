@@ -11,7 +11,7 @@ const cors = require('cors');
 // DB Setup
 mongoose.Promise = require('q').Promise;
 
-if (process.env.NODE_ENV !== "production") {
+if (env.NODE_ENV !== "production") {
 	mongoose.connect('mongodb://localhost:auth/smartpowersocket');
 } else {
 	mongoose.connect('mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/smartpowersocket');
@@ -28,7 +28,7 @@ router(app);
 // automaticaly
 
 // Server Setup
-const port = process.env.PORT || 3000;
 const server = http.createServer(app);
-server.listen(port);
-console.log('Server listening to port: ', port);
+server.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
+  console.log(`Application worker ${process.pid} started...`);
+});
