@@ -1,3 +1,5 @@
+"use strict";
+
 const User = require('../models/user');
 const Device = require('../models/device');
 const jwt = require('jwt-simple');

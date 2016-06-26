@@ -1,3 +1,5 @@
+"use strict";
+
 const Device = require('../models/device');
 const DeviceData = require('../models/deviceData');
 

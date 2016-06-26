@@ -1,3 +1,5 @@
+"use strict";
+
 const Authentication = require('./controllers/authentication');
 const Photon = require('./controllers/photon');
 const passportService = require('./services/passport');

@@ -1,3 +1,5 @@
+"use strict";
+
 const passport = require('passport'); // is user logged in before going to controller
 const User = require('../models/user');
 const config = require('../config');
