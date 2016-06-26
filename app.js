@@ -7,6 +7,7 @@ const app = express();
 const router = require('./router');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const env = process.env;
 
 // DB Setup
 mongoose.Promise = require('q').Promise;
