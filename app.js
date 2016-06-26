@@ -1,43 +1,34 @@
-const http         = require('http'),
-      fs           = require('fs'),
-      path         = require('path'),
-      contentTypes = require('./utils/content-types'),
-      sysInfo      = require('./utils/sys-info'),
-      env          = process.env;
+// Main starting point of the application
+const express = require('express');
+const http = require('http');
+const bodyParser = require('body-parser'); // parse requests to JSON
+const morgan = require('morgan'); // log-in incoming requests framework
+const app = express();
+const router = require('./router');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
-let server = http.createServer(function (req, res) {
-  let url = req.url;
-  if (url == '/') {
-    url += 'index.html';
-  }
+// DB Setup
+mongoose.Promise = require('q').Promise;
 
-  // IMPORTANT: Your application HAS to respond to GET /health with status 200
-  //            for OpenShift health monitoring
+if (process.env.NODE_ENV !== "production") {
+	mongoose.connect('mongodb://localhost:auth/smartpowersocket');
+} else {
+	mongoose.connect('mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/smartpowersocket');
+}
 
-  if (url == '/health') {
-    res.writeHead(200);
-    res.end();
-  } else if (url == '/info/gen' || url == '/info/poll') {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-cache, no-store');
-    res.end(JSON.stringify(sysInfo[url.slice(6)]()));
-  } else {
-    fs.readFile('./static' + url, function (err, data) {
-      if (err) {
-        res.writeHead(404);
-        res.end('Not found');
-      } else {
-        let ext = path.extname(url).slice(1);
-        res.setHeader('Content-Type', contentTypes[ext]);
-        if (ext === 'html') {
-          res.setHeader('Cache-Control', 'no-cache, no-store');
-        }
-        res.end(data);
-      }
-    });
-  }
-});
+// App Setup - middleware
+app.use(morgan('combined'));
+app.use(cors()); // accept all requests
+app.use(bodyParser.json({ type: '*/*' }));
+router(app);
 
-server.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
-  console.log(`Application worker ${process.pid} started...`);
-});
+// npm install --save nodemon
+// nodemon check for changes on the api files and restarts
+// automaticaly
+
+// Server Setup
+const port = process.env.PORT || 3000;
+const server = http.createServer(app);
+server.listen(port);
+console.log('Server listening to port: ', port);
