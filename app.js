@@ -14,7 +14,7 @@ mongoose.Promise = require('q').Promise;
 if (env.NODE_ENV !== "production") {
 	mongoose.connect('mongodb://localhost:auth/smartpowersocket');
 } else {
-	mongoose.connect('mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/smartpowersocket');
+	mongoose.connect('mongodb://$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT/api');
 }
 
 // App Setup - middleware
