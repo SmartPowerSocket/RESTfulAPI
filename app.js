@@ -31,8 +31,12 @@ router(app);
 // nodemon check for changes on the api files and restarts
 // automaticaly
 
+const nodePort = env.NODE_PORT || 3000;
+const nodeIp = env.NODE_IP || 'localhost';
+
 // Server Setup
 const server = http.createServer(app);
-server.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
+server.listen(nodePort, nodeIp, function () {
   console.log(`Application worker ${process.pid} started...`);
+  console.log(`IP: ${nodeIp} PORT: ${nodePort}`);
 });

@@ -10,9 +10,15 @@ const requireAuth = passport.authenticate('jwt', { session: false });
 const requireSignin = passport.authenticate('local', { session: false });
 
 module.exports = function(app) {
+
   app.get('/', requireAuth, function(req, res) {
-    res.send({message: 'Super secret code'});
+    return res.sendStatus(200);
   });
+
+  app.get('/health', function(req, res) {
+    return res.sendStatus(200);
+  });
+
   app.post('/signin', requireSignin, Authentication.signin);
   app.post('/signup', Authentication.signup);
 
