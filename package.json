@@ -8,10 +8,10 @@
     "dev": "nodemon index.js",
     "start": "node --use_strict start.js"
   },
-  "author": "", 
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "bcrypt": "^0.8.7",
     "body-parser": "^1.15.0",
     "cors": "^2.7.1",
     "crypto": "0.0.3",
