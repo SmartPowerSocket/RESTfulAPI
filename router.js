@@ -29,4 +29,6 @@ module.exports = function(app) {
   app.get('/deviceDetails', requireAuth, Photon.deviceDetails);
   app.get('/deviceMostRecentData', requireAuth, Photon.deviceMostRecentData);
   app.post('/changeDeviceStatus', requireAuth, Photon.changeDeviceStatus);
+  app.post('/changeDeviceName', requireAuth, Photon.changeDeviceName);
+  app.post('/particle/oauth/token', Photon.particleOAuth);
 };

@@ -2,6 +2,7 @@
 
 const Device = require('../models/device');
 const DeviceData = require('../models/deviceData');
+const request = require('request');
 
 exports.sendSocketInformation = function(req, res) {
   
@@ -133,7 +134,7 @@ exports.deviceMostRecentData = function(req, res) {
       res.status(400).send({error: "No device found!"});
     }
 
-    // Search data for the 5 seconds
+    // Search data from 5 seconds ago
     let interval = new Date();
     interval.setMinutes(interval.getMinutes()-0.05);
 
@@ -143,8 +144,9 @@ exports.deviceMostRecentData = function(req, res) {
     }).lean().exec().then(function(deviceData) {
       if (!deviceData) {
         deviceData = {};
+        return res.status(422).send({error: "No recent data!"});
       }
-      res.status(200).send({deviceMostRecentData: deviceData});
+      return res.status(200).send({deviceMostRecentData: deviceData});
     });
 
   });
@@ -183,5 +185,70 @@ exports.changeDeviceStatus = function(req, res) {
     });
 
   });
+
+};
+
+
+exports.changeDeviceName = function(req, res) {
+
+  if (!req.body.deviceId) {
+    return res.status(400).send({error: "No device id sent!"});
+  }
+
+  Device.findOne({_id: req.body.deviceId, "state.status": { $ne: Device.STATUS.DELETED } }).exec().then(function(device) {
+    
+    if (!device) {
+      return res.status(400).send({error: "No device found!"});
+    }
+    if (String(device.userId) !== String(req.user._id)) {
+      return res.status(400).send({error: "This device is not yours"});
+    }
+
+    const deviceName = req.body.deviceName;
+
+    if (deviceName === "" || !deviceName) {
+      return res.status(400).send({error: "Device name is invalid!"});
+    }
+
+    device.photonName = deviceName;
+
+    device.save().then(function(device) {
+      return res.status(200).send({device: device});
+    }).fail(function(error) {
+      return res.status(422).send({error: error.errors});
+    });
+
+  });
+
+};
+
+exports.particleOAuth = function(req, res) {
+
+    let requestObj = request.defaults({
+      baseUrl: req.body.apiUrl,
+    });
+
+    requestObj({
+      uri: '/oauth/token',
+      method: 'POST',
+      form: {
+        username: "danielmapar@gmail.com",
+        password: "Dertyu765",
+        grant_type: 'password',
+        client_id: req.body.client_id,
+        client_secret: 'client_secret_here'
+      },
+      json: true
+    }, function (error, response, body) {
+      
+      if (error) {
+        return res.status(422).send(error);
+      }
+      if (body.error) {
+        return res.status(422).send(body.error_description);
+      } else {
+        return res.status(200).send(body);
+      }
+    });
 
 };

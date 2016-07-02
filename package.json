@@ -6,7 +6,7 @@
   "repository": "https://github.com/SmartPowerSocket/RESTfulAPI.git",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
+    "dev": "nodemon app.js",
     "start": "node --use_strict start.js"
   },
   "author": "",
@@ -24,6 +24,7 @@
     "passport": "^0.3.2",
     "passport-jwt": "^2.0.0",
     "passport-local": "^1.0.0",
-    "q": "^1.4.1"
+    "q": "^1.4.1",
+    "request": "^2.72.0"
   }
 }
