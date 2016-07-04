@@ -232,8 +232,8 @@ exports.particleOAuth = function(req, res) {
       uri: '/oauth/token',
       method: 'POST',
       form: {
-        username: "danielmapar@gmail.com",
-        password: "Dertyu765",
+        username: "smartpowersocket@gmail.com",
+        password: "smartpowersocket2016***",
         grant_type: 'password',
         client_id: req.body.client_id,
         client_secret: 'client_secret_here'
