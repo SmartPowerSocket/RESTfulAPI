@@ -14,7 +14,7 @@ cluster.on('disconnect', function(worker) {
     if (!stopping) {
       cluster.fork();
     }
-  } else {
+  } else { 
     process.exit(1);
   }
 });
