@@ -13,7 +13,7 @@ cluster.on('disconnect', function(worker) {
   if (production) {
     if (!stopping) {
       cluster.fork();
-    }
+    } 
   } else { 
     process.exit(1);
   }
