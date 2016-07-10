@@ -16,7 +16,7 @@ cluster.on('disconnect', function(worker) {
     } 
   } else { 
     process.exit(1);
-  }
+  } 
 });
 
 if (cluster.isMaster) {
