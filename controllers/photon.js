@@ -5,12 +5,12 @@ const DeviceData = require('../models/deviceData');
 const request = require('request');
 
 exports.sendSocketInformation = function(req, res) {
-  
+
   const apiKey = req.body.apiKey;
   const coreid = String(req.body.coreid);
   const current = Number(req.body.current);
   const tension = Number(req.body.tension);
-  
+
   Device.findOne({photonId: coreid, apiKey: apiKey, "state.status": { $ne: Device.STATUS.DELETED } }).lean().exec().then(function(device) {
     if (device) {
       const deviceData = new DeviceData({
@@ -27,7 +27,7 @@ exports.sendSocketInformation = function(req, res) {
       });
     } else {
       return res.status(422).send({error: "Authentication failed!"});
-    } 
+    }
 
   });
 };
@@ -40,7 +40,7 @@ exports.getServerInformation = function(req, res) {
     const apiKey = data.apiKey;
     const coreid = req.query.coreid;
 
-    Device.findOne({photonId: coreid, apiKey: apiKey}).lean().exec().then(function(device) {
+    Device.findOne({photonId: coreid, apiKey: apiKey}, {}, { sort: { 'claimDate' : 1 } }).lean().exec().then(function(device) {
       if (device) {
         return res.status(200).send(device.state);
       } else {
@@ -107,7 +107,7 @@ exports.deviceDetails = function(req, res) {
     DeviceData.find({
       deviceId: device._id,
       date: {
-        $gte: lowerInterval, 
+        $gte: lowerInterval,
         $lte: upperInterval
       }
     }).lean().exec().then(function(deviceData) {
@@ -160,7 +160,7 @@ exports.changeDeviceStatus = function(req, res) {
   }
 
   Device.findOne({_id: req.body.deviceId, "state.status": { $ne: Device.STATUS.DELETED } }).exec().then(function(device) {
-    
+
     if (!device) {
       return res.status(400).send({error: "No device found!"});
     }
@@ -170,7 +170,7 @@ exports.changeDeviceStatus = function(req, res) {
 
     const status = req.body.status;
 
-    if (status !== Device.STATUS.ACTIVE && 
+    if (status !== Device.STATUS.ACTIVE &&
         status !== Device.STATUS.INACTIVE &&
         status !== Device.STATUS.DELETED) {
       return res.status(400).send({error: "Not a valid status change"});
@@ -196,7 +196,7 @@ exports.changeDeviceName = function(req, res) {
   }
 
   Device.findOne({_id: req.body.deviceId, "state.status": { $ne: Device.STATUS.DELETED } }).exec().then(function(device) {
-    
+
     if (!device) {
       return res.status(400).send({error: "No device found!"});
     }
@@ -233,14 +233,14 @@ exports.particleOAuth = function(req, res) {
       method: 'POST',
       form: {
         username: "smartpowersocket@gmail.com",
-        password: "smartpowersocket2016***", 
+        password: "smartpowersocket2016***",
         grant_type: 'password',
         client_id: req.body.client_id,
         client_secret: 'client_secret_here'
       },
       json: true
     }, function (error, response, body) {
-      
+
       if (error) {
         return res.status(422).send(error);
       }
