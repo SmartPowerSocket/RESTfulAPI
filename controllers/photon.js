@@ -39,7 +39,7 @@ exports.getServerInformation = function(req, res) {
 
     const apiKey = data.apiKey;
     const coreid = req.query.coreid;
- 
+
     Device.findOne({photonId: coreid, apiKey: apiKey}).sort({claimDate: -1}).lean().exec().then(function(device) {
       if (device) {
         return res.status(200).send(device.state);
@@ -47,7 +47,7 @@ exports.getServerInformation = function(req, res) {
         return res.status(422).send({error: "Authentication failed!"});
       }
     });
-  } else {
+  } else { 
     return res.sendStatus(422);
   }
 
