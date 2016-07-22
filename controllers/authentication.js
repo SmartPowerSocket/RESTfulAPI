@@ -4,7 +4,7 @@ const User = require('../models/user');
 const Device = require('../models/device');
 const jwt = require('jwt-simple');
 const config = require('../config');
-const crypto = require('crypto');
+const crypto = require('crypto'); 
 
 function tokenForUser(user) {
   // https://self-issued.info/docs/draft-ietf-oauth-json-web-token.html#rfc.section.4.1.4
@@ -23,7 +23,7 @@ exports.signin = function(req, res, next) {
   res.send({ token: tokenForUser(req.user), email: req.user.email, apiKey: req.user.apiKey });
 };
 
-function validEmail(email) 
+function validEmail(email)
 {
   let re = /\S+@\S+\.\S+/;
   return re.test(email);
