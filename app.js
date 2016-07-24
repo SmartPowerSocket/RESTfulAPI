@@ -6,6 +6,7 @@ const http = require('http');
 const bodyParser = require('body-parser'); // parse requests to JSON
 const morgan = require('morgan'); // log-in incoming requests framework
 const app = express();
+const fs = require('fs');
 const router = require('./router');
 const mongoose = require('mongoose');
 const cors = require('cors');
