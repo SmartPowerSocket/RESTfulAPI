@@ -11,6 +11,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const env = process.env;
 
+// create a write stream (in append mode)
+var accessLogStream = fs.createWriteStream(__dirname + '/access.log',{flags: 'a'});
+
 // DB Setup
 mongoose.Promise = require('q').Promise;
 
@@ -22,7 +25,7 @@ if (env.NODE_ENV !== "production") {
 }
 
 // App Setup - middleware
-app.use(morgan('combined'));
+app.use(morgan('combined', {stream: accessLogStream}));
 app.use(cors()); // accept all requests
 app.use(bodyParser.json({ type: '*/*' }));
 router(app);
