@@ -13,8 +13,12 @@ const cors = require('cors');
 const env = process.env;
 
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream(__dirname + '/access.log',{flags: 'a'});
-
+let accessLogStream = null;
+if (env.NODE_ENV !== "production") {
+	accessLogStream = fs.createWriteStream(__dirname + '/access.log',{flags: 'a'});
+} else {
+	accessLogStream = fs.createWriteStream(env.OPENSHIFT_LOG_DIR + '/access.log',{flags: 'a'});
+}
 // DB Setup
 mongoose.Promise = require('q').Promise;
 
