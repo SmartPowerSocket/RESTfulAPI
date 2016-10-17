@@ -7,7 +7,7 @@ const request = require('request');
 exports.sendSocketInformation = function(req, res) {
 
   const apiKey = req.body.apiKey;
-  const coreid = String(req.body.coreid);
+  const coreid = req.body.coreid;
   const current = Number(req.body.current);
   const tension = Number(req.body.tension);
 
@@ -47,7 +47,7 @@ exports.getServerInformation = function(req, res) {
         return res.status(422).send({error: "Authentication failed!"});
       }
     });
-  } else { 
+  } else {
     return res.sendStatus(422);
   }
 
