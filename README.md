@@ -1,4 +1,4 @@
-# NodeExpressJWTAuth
+# RESTfulAPI
 
 ###Getting Started###
 
@@ -13,6 +13,5 @@ After installing it, remember to run mongo by doing:
 Finally, in another tab you now can do:
 
 ```
-	> npm install
-	> npm start
+	> npm run dev
 ```
