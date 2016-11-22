@@ -367,8 +367,8 @@ exports.generateReport = function(req, res) {
         report: {
           socketNum: socketNum,
           data: {
-            consumptionkW: consumptionkW,
-            consumptionReais: consumptionReais 
+            consumptionkW: consumptionkW.toFixed(2),
+            consumptionReais: consumptionReais.toFixed(2)
           }
         }
       });
