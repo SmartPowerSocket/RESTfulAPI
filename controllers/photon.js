@@ -367,7 +367,7 @@ exports.generateReport = function(req, res) {
         report: {
           socketNum: socketNum,
           data: {
-            totalConsumptionKW: totalConsumptionKW,
+            consumptionkW: consumptionkW,
             consumptionReais: consumptionReais 
           }
         }
