@@ -23,6 +23,7 @@ module.exports = function(app) {
   app.post('/signup', Authentication.signup);
 
   app.post('/sendSocketInformation', Photon.sendSocketInformation);
+  app.post('/changeSocketStatus', Photon.changeSocketStatus);
   app.get('/getServerInformation', Photon.getServerInformation);
   app.post('/claimDevice', requireAuth, Photon.claimDevice);
   app.get('/listDevices', requireAuth, Photon.listDevices);

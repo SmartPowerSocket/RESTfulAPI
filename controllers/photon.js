@@ -37,6 +37,57 @@ exports.sendSocketInformation = function(req, res) {
   });
 };
 
+exports.changeSocketStatus = function(req, res) {
+
+  const apiKey = req.body.apiKey;
+  const coreid = req.body.coreid;
+  const socketNum = Number(req.body.socketNum);
+
+  Device.findOne({
+    photonId: coreid, 
+    apiKey: apiKey
+  }).exec().then(function(device) {
+    if (device) {
+
+      if (socketNum === 1 && 
+          device.socket1 && 
+          device.socket1.state.status) {
+        if (device.socket1.state.status === Device.STATUS.INACTIVE) {
+          device.socket1.state.status = Device.STATUS.ACTIVE;
+        } else if (device.socket1.state.status === Device.STATUS.ACTIVE) {
+          device.socket1.state.status = Device.STATUS.INACTIVE;
+        }
+      } else if(socketNum === 2 && 
+                device.socket2 && 
+                device.socket2.state.status) {
+        if (device.socket2.state.status === Device.STATUS.INACTIVE) {
+          device.socket2.state.status = Device.STATUS.ACTIVE;
+        } else if (device.socket2.state.status === Device.STATUS.ACTIVE) {
+          device.socket2.state.status = Device.STATUS.INACTIVE;
+        }
+      }
+
+      device.save().then(function() {
+        if (socketNum === 1) {
+          return res.status(200).send({
+            state: device.socket1.state,
+            socketName: "Socket1"
+          });
+        } else  if (socketNum === 2) {
+          return res.status(200).send({
+            state: device.socket2.state,
+            socketName: "Socket2"
+          });
+        }
+      }).fail(function(error) {
+        return res.status(422).send({error: error.errors});
+      });
+    } else {
+      return res.status(422).send({error: "Authentication failed!"});
+    }
+  });
+};
+
 exports.getServerInformation = function(req, res) {
 
   if (req.query && req.query.data) {
