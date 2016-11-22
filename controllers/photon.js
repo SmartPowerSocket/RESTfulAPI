@@ -292,7 +292,7 @@ exports.generateReport = function(req, res) {
   const socketNum = Number(req.body.socketNum);
   let startDate = new Date(req.body.startDate);
   let endDate = new Date(req.body.endDate);
-  const kVAReaisHour = Number(req.body.kVAReaisHour);
+  const kWReaisHour = Number(req.body.kWReaisHour);
 
   if (!deviceId) {
     return res.status(400).send({error: "No device id sent!"});
@@ -310,7 +310,7 @@ exports.generateReport = function(req, res) {
     return res.status(400).send({error: "No end date sent!"});
   }
 
-  if (kVAReaisHour > 0) {
+  if (!kWReaisHour) {
     return res.status(400).send({error: "No kVA reais hour sent!"});
   }
 
@@ -318,9 +318,6 @@ exports.generateReport = function(req, res) {
     if (!device) {
       res.status(400).send({error: "No device found!"});
     }
-
-    // Subtract one day
-    //startDate.setDate(startDate.getDate()-1);
 
     DeviceData.find({
       deviceId: device._id,
@@ -331,20 +328,46 @@ exports.generateReport = function(req, res) {
       socketNum: socketNum
     }).lean().exec().then(function(devicesData) {
 
-      let consumptionkVA = 0;
+      let consumptionkW = 0;
       let consumptionReais = 0;
 
-      if (devicesData) {
+      if (devicesData && devicesData.length > 0) {
+        let lastMinute = null;
+        let currentMinute = null;
+        let totalConsumptionKW = 0;
+        let totalConsumptionReais = 0;
+        let lastMinuteConsumption = 0;
+        let countRepetitiveMinutes = 0;
+        let countUniqueMinutes = 0;
+
         devicesData.forEach(function(deviceData) {
-          console.log(deviceData.date);
+          
+          currentMinute = deviceData.date.getMinutes();
+          if (currentMinute === lastMinute) {
+            countRepetitiveMinutes += 1;
+            lastMinuteConsumption += deviceData.apparentPower;
+          } else {
+            if (lastMinuteConsumption > 0 && countRepetitiveMinutes > 0) {
+              totalConsumptionKW += (lastMinuteConsumption / countRepetitiveMinutes) / 1000;
+            }
+            lastMinute = currentMinute;
+            countUniqueMinutes += 1;
+            countRepetitiveMinutes = 1;
+            lastMinuteConsumption = deviceData.apparentPower;
+          }
         });
+
+        if (totalConsumptionKW > 0 && countUniqueMinutes > 0) {
+          consumptionReais = (totalConsumptionKW * (countUniqueMinutes/60)) * kWReaisHour; 
+          consumptionkW = totalConsumptionKW;
+        }
       }
 
       return res.status(200).send({
         report: {
           socketNum: socketNum,
           data: {
-            consumptionkVA: consumptionkVA,
+            totalConsumptionKW: totalConsumptionKW,
             consumptionReais: consumptionReais 
           }
         }
