@@ -10,11 +10,16 @@ exports.sendSocketInformation = function(req, res) {
   const coreid = req.body.coreid;
   const current = Number(req.body.current);
   const tension = Number(req.body.tension);
+  const socketNum = Number(req.body.socketNum);
 
-  Device.findOne({photonId: coreid, apiKey: apiKey, "state.status": { $ne: Device.STATUS.DELETED } }).lean().exec().then(function(device) {
+  Device.findOne({
+    photonId: coreid, 
+    apiKey: apiKey
+  }).lean().exec().then(function(device) {
     if (device) {
       const deviceData = new DeviceData({
         deviceId: device._id,
+        socketNum: socketNum,
         current: current,
         tension: tension,
         apparentPower: current * tension
@@ -39,12 +44,26 @@ exports.getServerInformation = function(req, res) {
 
     const apiKey = data.apiKey;
     const coreid = req.query.coreid;
+    const socketNum = Number(data.socketNum);
 
-    Device.findOne({photonId: coreid, apiKey: apiKey}).sort({claimDate: -1}).lean().exec().then(function(device) {
+    Device.findOne({
+      photonId: coreid, 
+      apiKey: apiKey
+    }).lean().exec().then(function(device) {
       if (device) {
-        return res.status(200).send(device.state);
+        if (socketNum === 1) {
+          return res.status(200).send({
+            state: device.socket1.state,
+            socketName: "Socket1"
+          });
+        } else  if (socketNum === 2) {
+          return res.status(200).send({
+            state: device.socket2.state,
+            socketName: "Socket2"
+          });
+        }
       } else {
-        return res.status(422).send({error: "Authentication failed!"});
+        return res.status(200).send({error: "Authentication failed!"});
       }
     });
   } else {
@@ -59,10 +78,18 @@ exports.claimDevice = function(req, res) {
     claimDate: Date.now(),
     userId: req.user._id,
     photonId: req.body.deviceId,
-    photonName: "New Device", //req.body.deviceName,
     apiKey: req.user.apiKey,
-    state: {
-      status: Device.STATUS.ACTIVE
+    socket1: {
+      name: "New Device - Socket 1", //req.body.deviceName,
+      state: {
+        status: Device.STATUS.ACTIVE
+      }
+    },
+    socket2: {
+      name: "New Device - Socket 2",
+      state: {
+        status: Device.STATUS.ACTIVE
+      }
     }
   });
 
@@ -77,7 +104,9 @@ exports.claimDevice = function(req, res) {
 
 exports.listDevices = function(req, res) {
 
-  Device.find({userId: req.user._id, "state.status": { $ne: Device.STATUS.DELETED } }).lean().exec().then(function(devices) {
+  Device.find({
+    userId: req.user._id
+  }).lean().exec().then(function(devices) {
     if (!devices) {
       res.status(400).send({error: "No devices found!"});
     }
@@ -92,7 +121,7 @@ exports.deviceDetails = function(req, res) {
     return res.status(400).send({error: "No device id sent!"});
   }
 
-  Device.findOne({_id: req.query.id, "state.status": { $ne: Device.STATUS.DELETED } }).lean().exec().then(function(device) {
+  Device.findById(req.query.id).lean().exec().then(function(device) {
     if (!device) {
       res.status(400).send({error: "No device found!"});
     }
@@ -125,11 +154,18 @@ exports.deviceDetails = function(req, res) {
 
 exports.deviceMostRecentData = function(req, res) {
 
-  if (!req.query.id) {
+  const deviceId = req.query.deviceId;
+  const socketNum = req.query.socketNum;
+
+  if (!deviceId) {
     return res.status(400).send({error: "No device id sent!"});
   }
 
-  Device.findOne({_id: req.query.id, "state.status": { $ne: Device.STATUS.DELETED } }).lean().exec().then(function(device) {
+  if (!socketNum) {
+    return res.status(400).send({error: "No socket number sent!"});
+  }
+
+  Device.findById(deviceId).lean().exec().then(function(device) {
     if (!device) {
       res.status(400).send({error: "No device found!"});
     }
@@ -140,10 +176,10 @@ exports.deviceMostRecentData = function(req, res) {
 
     DeviceData.findOne({
       deviceId: device._id,
-      date: {$gte: interval}
+      date: {$gte: interval},
+      socketNum: socketNum
     }).lean().exec().then(function(deviceData) {
       if (!deviceData) {
-        deviceData = {};
         return res.status(422).send({error: "No recent data!"});
       }
       return res.status(200).send({deviceMostRecentData: deviceData});
@@ -155,20 +191,23 @@ exports.deviceMostRecentData = function(req, res) {
 
 exports.changeDeviceStatus = function(req, res) {
 
-  if (!req.body.deviceId) {
+  const deviceId = req.body.deviceId;
+  const socketNum = Number(req.body.socketNum);
+  const status = req.body.status;
+  const userId = String(req.user._id);
+
+  if (!deviceId) {
     return res.status(400).send({error: "No device id sent!"});
   }
 
-  Device.findOne({_id: req.body.deviceId, "state.status": { $ne: Device.STATUS.DELETED } }).exec().then(function(device) {
+  Device.findById(deviceId).exec().then(function(device) {
 
     if (!device) {
       return res.status(400).send({error: "No device found!"});
     }
-    if (String(device.userId) !== String(req.user._id)) {
+    if (String(device.userId) !== userId) {
       return res.status(400).send({error: "This device is not yours"});
     }
-
-    const status = req.body.status;
 
     if (status !== Device.STATUS.ACTIVE &&
         status !== Device.STATUS.INACTIVE &&
@@ -176,13 +215,32 @@ exports.changeDeviceStatus = function(req, res) {
       return res.status(400).send({error: "Not a valid status change"});
     }
 
-    device.state.status = status;
+    if (socketNum === 1) {
+      device.socket1.state.status = status;
+    } else if (socketNum === 2) {
+      device.socket2.state.status = status;
+    } 
 
-    device.save().then(function(device) {
-      return res.status(200).send({device: device});
-    }).fail(function(error) {
-      return res.status(422).send({error: error.errors});
-    });
+    if (device.socket1.state.status === Device.STATUS.DELETED &&
+        device.socket2.state.status === Device.STATUS.DELETED) {
+
+      device.remove().then(function() {
+        DeviceData.remove({
+          deviceId: device._id
+        }).exec().then(function() {
+          return res.status(200).send({deviceRemoved: true});
+        });
+      }).fail(function(error) {
+        return res.status(422).send({error: error.errors});
+      });
+    } else {
+
+      device.save().then(function(device) {
+        return res.status(200).send({device: device});
+      }).fail(function(error) {
+        return res.status(422).send({error: error.errors});
+      });
+    }
 
   });
 
@@ -195,7 +253,7 @@ exports.changeDeviceName = function(req, res) {
     return res.status(400).send({error: "No device id sent!"});
   }
 
-  Device.findOne({_id: req.body.deviceId, "state.status": { $ne: Device.STATUS.DELETED } }).exec().then(function(device) {
+  Device.findById(req.body.deviceId).exec().then(function(device) {
 
     if (!device) {
       return res.status(400).send({error: "No device found!"});
@@ -210,8 +268,14 @@ exports.changeDeviceName = function(req, res) {
       return res.status(400).send({error: "Device name is invalid!"});
     }
 
-    device.photonName = deviceName;
+    const socketNum = Number(req.body.socketNum);
 
+    if (socketNum === 1) {
+      device.socket1.name = deviceName;
+    } else if (socketNum === 2) {
+      device.socket2.name = deviceName;
+    }
+  
     device.save().then(function(device) {
       return res.status(200).send({device: device});
     }).fail(function(error) {
@@ -220,6 +284,75 @@ exports.changeDeviceName = function(req, res) {
 
   });
 
+};
+
+exports.generateReport = function(req, res) {
+
+  const deviceId = req.body.deviceId;
+  const socketNum = Number(req.body.socketNum);
+  let startDate = new Date(req.body.startDate);
+  let endDate = new Date(req.body.endDate);
+  const kVAReaisHour = Number(req.body.kVAReaisHour);
+
+  if (!deviceId) {
+    return res.status(400).send({error: "No device id sent!"});
+  }
+
+  if (!socketNum) {
+    return res.status(400).send({error: "No socket number sent!"});
+  }
+
+  if (!startDate) {
+    return res.status(400).send({error: "No start date sent!"});
+  }
+
+  if (!endDate) {
+    return res.status(400).send({error: "No end date sent!"});
+  }
+
+  if (kVAReaisHour > 0) {
+    return res.status(400).send({error: "No kVA reais hour sent!"});
+  }
+
+  Device.findById(deviceId).lean().exec().then(function(device) {
+    if (!device) {
+      res.status(400).send({error: "No device found!"});
+    }
+
+    // Subtract one day
+    //startDate.setDate(startDate.getDate()-1);
+
+    DeviceData.find({
+      deviceId: device._id,
+      date: {
+        $gte: startDate,
+        $lte: endDate
+      },
+      socketNum: socketNum
+    }).lean().exec().then(function(devicesData) {
+
+      let consumptionkVA = 0;
+      let consumptionReais = 0;
+
+      if (devicesData) {
+        devicesData.forEach(function(deviceData) {
+          console.log(deviceData.date);
+        });
+      }
+
+      return res.status(200).send({
+        report: {
+          socketNum: socketNum,
+          data: {
+            consumptionkVA: consumptionkVA,
+            consumptionReais: consumptionReais 
+          }
+        }
+      });
+
+    });
+
+  });
 };
 
 exports.particleOAuth = function(req, res) {

@@ -8,10 +8,18 @@ const deviceSchema = new Schema({
 	claimDate: { type: Date, default: Date.now },
 	userId: { type: Schema.ObjectId },
 	photonId: { type: String },
-	photonName: { type: String },
 	apiKey: { type: String },
-	state: {
-		status: String
+	socket1: {
+		name: { type: String },
+		state: {
+			status: String
+		}
+	},
+	socket2: {
+		name: { type: String },
+		state: {
+			status: String
+		}
 	}
 });
 

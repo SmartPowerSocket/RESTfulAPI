@@ -30,5 +30,6 @@ module.exports = function(app) {
   app.get('/deviceMostRecentData', requireAuth, Photon.deviceMostRecentData);
   app.post('/changeDeviceStatus', requireAuth, Photon.changeDeviceStatus);
   app.post('/changeDeviceName', requireAuth, Photon.changeDeviceName);
+  app.post('/generateReport', requireAuth, Photon.generateReport);
   app.post('/particle/oauth/token', Photon.particleOAuth);
 };

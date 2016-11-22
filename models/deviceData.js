@@ -7,6 +7,7 @@ const Schema = mongoose.Schema;
 const deviceDataSchema = new Schema({
 	deviceId: Schema.Types.ObjectId,
 	date: { type: Date, default: Date.now, index: true },
+	socketNum: Number,
 	current: Number,
 	tension: Number,
 	apparentPower: Number
