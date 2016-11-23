@@ -182,7 +182,7 @@ exports.deviceDetails = function(req, res) {
     upperInterval.setMinutes(upperInterval.getMinutes()-0.10);
 
     let lowerInterval = new Date();
-    lowerInterval.setMinutes(lowerInterval.getMinutes()-2);
+    lowerInterval.setMinutes(lowerInterval.getMinutes()-5);
 
     DeviceData.find({
       deviceId: device._id,
