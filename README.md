@@ -9,8 +9,8 @@ Install MongoDB before running the API server:
 https://docs.mongodb.org/manual/installation/
 
 After installing it, remember to run mongo by doing:
-```
-	> mongod
+```sh
+$ mongod
 ```
 
 Install dependencies and start app
