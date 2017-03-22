@@ -13,9 +13,11 @@ After installing it, remember to run mongo by doing:
 	> mongod
 ```
 
-Finally, in another tab you now can do:
-
-```
-	> npm install
-	> npm run dev
+Install dependencies and start app
+```sh
+$ npm install
+$ touch .env
+$ echo "PARTICLE_USER_EMAIL='${PARTICLE_USER_EMAIL}'" > .env
+$ echo "PARTICLE_USER_PASSWORD='${PARTICLE_USER_PASSWORD}'" > .env
+$ npm run dev
 ```
