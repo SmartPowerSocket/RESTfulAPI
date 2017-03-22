@@ -1,5 +1,8 @@
 # RESTfulAPI
 
+## Reference
+This project was done as part of an undergrad thesis, for more details visit: https://docs.google.com/file/d/0B4CqM12akwGJQ2hrTlVPTWtFYkE/edit?filetype=msword
+
 ## Getting Started
 
 Install MongoDB before running the API server:
