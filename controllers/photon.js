@@ -13,7 +13,7 @@ exports.sendSocketInformation = function(req, res) {
   const socketNum = Number(req.body.socketNum);
 
   Device.findOne({
-    photonId: coreid, 
+    photonId: coreid,
     apiKey: apiKey
   }).lean().exec().then(function(device) {
     if (device) {
@@ -44,21 +44,21 @@ exports.changeSocketStatus = function(req, res) {
   const socketNum = Number(req.body.socketNum);
 
   Device.findOne({
-    photonId: coreid, 
+    photonId: coreid,
     apiKey: apiKey
   }).exec().then(function(device) {
     if (device) {
 
-      if (socketNum === 1 && 
-          device.socket1 && 
+      if (socketNum === 1 &&
+          device.socket1 &&
           device.socket1.state.status) {
         if (device.socket1.state.status === Device.STATUS.INACTIVE) {
           device.socket1.state.status = Device.STATUS.ACTIVE;
         } else if (device.socket1.state.status === Device.STATUS.ACTIVE) {
           device.socket1.state.status = Device.STATUS.INACTIVE;
         }
-      } else if(socketNum === 2 && 
-                device.socket2 && 
+      } else if(socketNum === 2 &&
+                device.socket2 &&
                 device.socket2.state.status) {
         if (device.socket2.state.status === Device.STATUS.INACTIVE) {
           device.socket2.state.status = Device.STATUS.ACTIVE;
@@ -98,7 +98,7 @@ exports.getServerInformation = function(req, res) {
     const socketNum = Number(data.socketNum);
 
     Device.findOne({
-      photonId: coreid, 
+      photonId: coreid,
       apiKey: apiKey
     }).lean().exec().then(function(device) {
       if (device) {
@@ -270,7 +270,7 @@ exports.changeDeviceStatus = function(req, res) {
       device.socket1.state.status = status;
     } else if (socketNum === 2) {
       device.socket2.state.status = status;
-    } 
+    }
 
     if (device.socket1.state.status === Device.STATUS.DELETED &&
         device.socket2.state.status === Device.STATUS.DELETED) {
@@ -326,7 +326,7 @@ exports.changeDeviceName = function(req, res) {
     } else if (socketNum === 2) {
       device.socket2.name = deviceName;
     }
-  
+
     device.save().then(function(device) {
       return res.status(200).send({device: device});
     }).fail(function(error) {
@@ -392,7 +392,7 @@ exports.generateReport = function(req, res) {
         let countUniqueMinutes = 0;
 
         devicesData.forEach(function(deviceData) {
-          
+
           currentMinute = deviceData.date.getMinutes();
           if (currentMinute === lastMinute) {
             countRepetitiveMinutes += 1;
@@ -409,7 +409,7 @@ exports.generateReport = function(req, res) {
         });
 
         if (totalConsumptionKW > 0 && countUniqueMinutes > 0) {
-          consumptionReais = (totalConsumptionKW * (countUniqueMinutes/60)) * kWReaisHour; 
+          consumptionReais = (totalConsumptionKW * (countUniqueMinutes/60)) * kWReaisHour;
           consumptionkW = totalConsumptionKW;
         }
       }
@@ -439,8 +439,8 @@ exports.particleOAuth = function(req, res) {
       uri: '/oauth/token',
       method: 'POST',
       form: {
-        username: "smartpowersocket@gmail.com",
-        password: "smartpowersocket2016***",
+        username: process.env.PARTICLE_USER_EMAIL,// Test user: "smartpowersocket@gmail.com",
+        password: process.env.PARTICLE_USER_PASSWORD, // Test pw: "smartpowersocket2016***",
         grant_type: 'password',
         client_id: req.body.client_id,
         client_secret: 'client_secret_here'

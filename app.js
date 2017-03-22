@@ -1,5 +1,7 @@
 "use strict";
 
+require('dotenv').config();
+
 // Main starting point of the application
 const express = require('express');
 const http = require('http');
